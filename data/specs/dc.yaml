@@ -1,0 +1,74 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  labels:
+    app: redis-cluster
+  name: redis-cluster
+spec:
+  replicas: 6
+  revisionHistoryLimit: 10
+  selector:
+    app: redis-cluster
+    deploymentconfig: redis-cluster
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: redis-cluster
+        deploymentconfig: redis-cluster
+    spec:
+      containers:
+      - command:
+        - /conf/update-node.sh
+        - redis-server
+        - /conf/redis.conf
+        env:
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: status.podIP
+        image: redis@sha256:489e8eab5eadd9b4ef5da67eecbbebc737107cf540d2842cfb56db022da6c742
+        imagePullPolicy: IfNotPresent
+        name: redis-cluster
+        ports:
+        - containerPort: 6379
+          protocol: TCP
+        - containerPort: 16379
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: "1"
+            memory: 2Gi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /data
+          name: redis-cluster-volume-1
+        - mountPath: /conf
+          name: conf
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - emptyDir: {}
+        name: redis-cluster-volume-1
+      - configMap:
+          defaultMode: 493
+          name: redis-cluster
+        name: conf
