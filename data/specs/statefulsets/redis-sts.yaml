@@ -24,7 +24,7 @@ metadata:
   name: redis-cluster
 spec:
   serviceName: redis-cluster
-  replicas: 14
+  replicas: 6
   selector:
     matchLabels:
       app: redis-cluster

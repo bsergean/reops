@@ -8,12 +8,12 @@ spec:
   containers:
   - args:
     - zsh
-    image: bsergean/rcc:production
+    image: bsergean/rcc:0.9.161
     imagePullPolicy: IfNotPresent
     name: rcc
     env:
       - name: RCC_REDIS_URL
-        value: redis://172.26.163.84
+        value: redis://172.16.196.241
     resources:
       limits:
         cpu: "1"
